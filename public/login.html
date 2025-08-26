@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Automatisation Facebook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(31, 38, 135, 0.37);
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #4f46e5;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #64748b;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .form-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(45deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .facebook-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #1877f2;
+        }
+
+        .facebook-section h3 {
+            color: #1877f2;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .facebook-section p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #64748b;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .footer-links a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                margin: 20px;
+                padding: 30px 25px;
+            }
+            
+            .logo h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>🤖 AutoBot FB</h1>
+            <p>Automatisez vos réponses Facebook</p>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Connexion</button>
+            <button class="tab-btn" onclick="switchTab('register')">Inscription</button>
+        </div>
+
+        <div class="alert" id="alertMessage"></div>
+
+        <!-- Formulaire de connexion -->
+        <div id="login" class="form-content active">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                </div>
+
+                <button type="submit" class="btn" id="loginBtn">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+
+        <!-- Formulaire d'inscription -->
+        <div id="register" class="form-content">
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" class="form-control" id="password" required minlength="6">
+                    <div class="help-text">Au moins 6 caractères</div>
+                </div>
+
+                <div class="facebook-section">
+                    <h3>📱 Configuration Facebook</h3>
+                    <p>Pour automatiser vos pages Facebook, vous devez créer une application Facebook et fournir vos identifiants :</p>
+                    
+                    <div class="form-group">
+                        <label for="facebookAppId">Facebook App ID</label>
+                        <input type="text" class="form-control" id="facebookAppId" required>
+                        <div class="help-text">
+                            <a href="https://developers.facebook.com/apps" target="_blank">Créer une app Facebook ici</a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facebookAppSecret">Facebook App Secret</label>
+                        <input type="password" class="form-control" id="facebookAppSecret" required>
+                        <div class="help-text">Clé secrète de votre application Facebook</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="webhookToken">Token de vérification Webhook</label>
+                        <input type="text" class="form-control" id="webhookToken" required>
+                        <div class="help-text">Token personnalisé pour sécuriser vos webhooks</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="registerBtn">
+                    Créer mon compte
+                </button>
+            </form>
+        </div>
+
+        <div class="footer-links">
+            <p>Vous avez déjà un compte ? <a href="#" onclick="switchTab('login')">Connectez-vous</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentTab = 'login';
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            
+            // Vérifier si l'utilisateur est déjà connecté
+            checkAuthStatus();
+        });
+
+        function setupEventListeners() {
+            // Formulaire de connexion
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
+
+            // Formulaire d'inscription
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleRegister();
+            });
+        }
+
+        // Vérification du statut d'authentification
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/user');
+                if (response.ok) {
+                    // Utilisateur déjà connecté, rediriger vers le dashboard
+                    window.location.href = '/dashboard';
+                }
+            } catch (error) {
+                // L'utilisateur n'est pas connecté, continuer normalement
+                console.log('Utilisateur non connecté');
+            }
+        }
+
+        // Gestion des onglets
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Mettre à jour les boutons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Mettre à jour le contenu
+            document.querySelectorAll('.form-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            // Réinitialiser les alertes
+            hideAlert();
+        }
+
+        // Connexion
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showAlert('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading"></span>Connexion...';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Connexion réussie ! Redirection...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    showAlert(result.error || 'Erreur de connexion', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur connexion:', error);
+                showAlert('Erreur de connexion au serveur', 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Se connecter';
+            }
+        }
+
+        // Inscription
+        async function handleRegister() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const facebookAppId = document.getElementById('facebookAppId').value;
+            const facebookAppSecret = document.getElementById('facebookAppSecret').value;
+            const webhookToken = document.getElementById('webhookToken').value;
+            
+            // Validation côté client
+            if (!username || !email || !password || !facebookAppId || !facebookAppSecret || !webhookToken) {
+                showAlert('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAlert('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showAlert('Veuillez entrer un email valide', 'error');
+                return;
+            }
+            
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="loading"></span>Création du compte...';
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                        facebookAppId,
+                        facebookAppSecret,
+                        webhookToken
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.', 'success');
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('registerForm').reset();
+                    
+                    // Basculer vers l'onglet connexion après 2 secondes
+                    setTimeout(() => {
+                        switchTabProgrammatically('login');
+                        // Pré-remplir l'email
+                        document.getElementById('loginEmail').value = email;
+                    }, 2000);
+                } else {
+                    showAlert(result.error || 'Erreur lors de la création du compte', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur inscription:', error);
+                showAlert('Erreur de connexion au serveur', 'error');
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = 'Créer mon compte';
+            }
+        }
+
+        // Basculer vers un onglet par programmation
+        function switchTabProgrammatically(tabName) {
+            // Mettre à jour les boutons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(tabName === 'login' ? 'connexion' : 'inscription')) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Mettre à jour le contenu
+            document.querySelectorAll('.form-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            
+            currentTab = tabName;
+            hideAlert();
+        }
+
+        // Validation email
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Gestion des alertes
+        function showAlert(message, type = 'error') {
+            const alert = document.getElementById('alertMessage');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            
+            // Faire défiler vers le haut pour voir l'alerte
+            alert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideAlert() {
+            const alert = document.getElementById('alertMessage');
+            alert.style.display = 'none';
+        }
+
+        // Génération automatique de token webhook
+        document.getElementById('webhookToken').addEventListener('focus', function() {
+            if (!this.value) {
+                this.value = generateWebhookToken();
+            }
+        });
+
+        function generateWebhookToken() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 32; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Gestion des touches clavier
+        document.addEventListener('keydown', function(e) {
+            // Soumettre le formulaire avec Entrée
+            if (e.key === 'Enter') {
+                if (currentTab === 'login') {
+                    e.preventDefault();
+                    handleLogin();
+                } else if (currentTab === 'register') {
+                    e.preventDefault();
+                    handleRegister();
+                }
+            }
+        });
+
+        // Animation d'entrée pour les champs de saisie
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 8px 25px rgba(79, 70, 229, 0.15)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Instructions pour l'utilisateur
+        function showFacebookHelp() {
+            const helpText = `
+            Pour configurer votre application Facebook :
+            
+            1. Allez sur https://developers.facebook.com/apps
+            2. Cliquez sur "Créer une app"
+            3. Choisissez "Entreprise" puis "Continuer"
+            4. Remplissez les informations de votre app
+            5. Dans le tableau de bord de votre app :
+               - Notez l'ID de l'app (App ID)
+               - Allez dans Paramètres > De base
+               - Notez la Clé secrète de l'app (App Secret)
+            6. Ajoutez le produit "Webhooks"
+            7. Configurez l'URL du webhook : ${window.location.origin}/api/webhook
+            8. Utilisez votre token de vérification personnalisé
+            `;
+            
+            alert(helpText);
+        }
+
+        // Ajouter un lien d'aide
+        document.querySelector('.facebook-section h3').addEventListener('click', showFacebookHelp);
+        document.querySelector('.facebook-section h3').style.cursor = 'pointer';
+        document.querySelector('.facebook-section h3').title = 'Cliquez pour voir les instructions détaillées';
+    </script>
+</body>
+</html>
